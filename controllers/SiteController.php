@@ -3,124 +3,39 @@
 namespace app\controllers;
 
 use Yii;
-use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\web\Response;
-use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
+use app\models\IpSave;
 
 class SiteController extends Controller
 {
     /**
-     * @inheritdoc
-     */
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function actions()
-    {
-        return [
-            'error' => [
-                'class' => 'yii\web\ErrorAction',
-            ],
-            'captcha' => [
-                'class' => 'yii\captcha\CaptchaAction',
-                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
-            ],
-        ];
-    }
-
-    /**
-     * Displays homepage.
+     * Render index page.
      *
      * @return string
      */
     public function actionIndex()
-    {
+    {   $ip = Yii::$app->request->userIP;
+        $model = new IpSave(['ip' => $ip ]);
+        $model->save();
         return $this->render('index');
     }
 
     /**
-     * Login action.
-     *
-     * @return Response|string
+     * Echo user info json.
      */
-    public function actionLogin()
+    public function actionInfo()
     {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+        $ip = Yii::$app->request->userIP;;
+        if (@fsockopen($ip, 80, $errstr, $errno, 1)) {
+            $proxy = TRUE;
+        } else {
+            $proxy = FALSE;
         }
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+        $geoIP = "";
+        if(isset($_SERVER['HTTP_GEOIP_COUNTRY_CODE'])) {
+            $geoIP = $_SERVER['HTTP_GEOIP_COUNTRY_CODE'];
         }
-        return $this->render('login', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
-
-            return $this->refresh();
-        }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
+        $data = ['ip' => $ip, 'proxy' => $proxy, 'geo' => $geoIP];
+        echo json_encode($data);
     }
 }

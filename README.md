@@ -150,13 +150,13 @@ To execute acceptance tests do the following:
     ```
     # for Firefox
     java -jar -Dwebdriver.gecko.driver=~/geckodriver ~/selenium-server-standalone-3.xx.x.jar
-    
+
     # for Google Chrome
     java -jar -Dwebdriver.chrome.driver=~/chromedriver ~/selenium-server-standalone-3.xx.x.jar
-    ``` 
-    
+    ```
+
     As an alternative way you can use already configured Docker container with older versions of Selenium and Firefox:
-    
+
     ```
     docker run --net=host selenium/standalone-firefox:2.53.0
     ```
