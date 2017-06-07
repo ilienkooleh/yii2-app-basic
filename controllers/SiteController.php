@@ -9,9 +9,10 @@ use app\models\IpSave;
 class SiteController extends Controller
 {
     /**
-     * @inheritdoc
+     * Render index page.
+     *
+     * @return string
      */
-
     public function actionIndex()
     {   $ip = Yii::$app->request->userIP;
         $model = new IpSave(['ip' => $ip ]);
@@ -19,6 +20,9 @@ class SiteController extends Controller
         return $this->render('index');
     }
 
+    /**
+     * Echo user info json.
+     */
     public function actionInfo()
     {
         $ip = Yii::$app->request->userIP;;
@@ -34,5 +38,4 @@ class SiteController extends Controller
         $data = ['ip' => $ip, 'proxy' => $proxy, 'geo' => $geoIP];
         echo json_encode($data);
     }
-
 }
